@@ -824,10 +824,12 @@ def main(page: ft.Page):
         get_schedule()
         page.update()
 
+    # print(source.global_variables.UPDATE)
     if source.global_variables.UPDATE:
         update_text.visible = True
     else:
         update_text.visible = False
+    # page.update()
     change_screens("login")
 
 
