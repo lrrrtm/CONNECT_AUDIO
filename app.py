@@ -2,6 +2,8 @@ from datetime import datetime
 import os
 import time
 
+import requests
+
 from source.schedule_funcs import start_schedule
 from source.mixer_funcs import control, set_volume, play_start_sound, start_music_check
 from source.functions import update_config_file, load_config_file
@@ -19,6 +21,14 @@ config_file_name = "audio_config.json"
 class Message():
     def __init__(self, data):
         self.data = data
+
+
+def send_awake():
+    config_data = load_config_file()
+    url = f'https://api.telegram.org/bot{config_data["bot"]["token"]}/sendMessage'
+    data = {'chat_id': config_data['bot']['chat'], 'text': '*Модуль 🔊CROD.Audio перезагружен*',
+            "parse_mode": "Markdown"}
+    requests.post(url=url, data=data)
 
 
 def main(page: ft.Page):
@@ -735,6 +745,7 @@ DEFAULT_FLET_PATH = ''
 flet_path = os.getenv("FLET_PATH", DEFAULT_FLET_PATH)
 if __name__ == "__main__":
     play_start_sound()
+    send_awake()
     start_music_check()
     start_schedule()
     ft.app(
