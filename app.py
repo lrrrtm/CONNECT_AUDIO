@@ -2,6 +2,7 @@ from datetime import datetime
 import os
 import time
 
+import git
 import requests
 import subprocess
 
@@ -54,6 +55,19 @@ def main(page: ft.Page):
         bgcolor=ft.colors.SURFACE_VARIANT,
         leading=None,
     )
+
+    def check_for_update():
+        repo = git.Repo('.')
+
+        current_commit = repo.head.commit
+        repo.remote().fetch()
+        remote_commit = repo.remote().refs['master'].commit
+        if current_commit != remote_commit:
+            update_text.visible = True
+        else:
+            update_text.visible = False
+
+        page.update()
 
     def on_incoming_message(message: Message):
 
@@ -546,13 +560,16 @@ def main(page: ft.Page):
         height=50
     )
 
+    update_text = ft.Text("Новое обновление доступно!", size=14, text_align=ft.TextAlign.CENTER, visible=False)
+
     screen_login = ft.Column(
         [
             ft.Column(
                 [
                     ft.Text("Audio", size=35, font_family="Montserrat", text_align=ft.TextAlign.CENTER),
                     password_field,
-                    btn_go
+                    btn_go,
+                    update_text
                 ],
                 expand=True,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -722,7 +739,6 @@ def main(page: ft.Page):
         expand=True,
         scroll=ft.ScrollMode.ADAPTIVE
     )
-    change_screens("login")
 
     timer_time_picker = ft.TimePicker(
         time_picker_entry_mode=ft.TimePickerEntryMode.DIAL_ONLY,
@@ -777,6 +793,9 @@ def main(page: ft.Page):
         dialog.open = False
         get_schedule()
         page.update()
+
+    check_for_update()
+    change_screens("login")
 
 
 DEFAULT_FLET_PATH = ''
