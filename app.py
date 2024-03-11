@@ -443,7 +443,7 @@ def main(page: ft.Page):
             page.add(
                 ft.Column(
                     [
-                        ft.Text("Упс, на этой странице ещё ничего нет...", size=30, font_family="Geologica-Black"),
+                        ft.Text("Упс, на этой странице ещё ничего нет...", size=30, font_family="Montserrat"),
                         ft.ElevatedButton(
                             "Назаааааааад",
                             icon=ft.icons.ARROW_BACK_ROUNDED,
@@ -480,7 +480,7 @@ def main(page: ft.Page):
         [
             ft.Column(
                 [
-                    ft.Text("Audio", size=35, font_family="Geologica-Black", text_align=ft.TextAlign.CENTER),
+                    ft.Text("Audio", size=35, font_family="Montserrat", text_align=ft.TextAlign.CENTER),
                     password_field,
                     btn_go
                 ],
@@ -675,7 +675,7 @@ def main(page: ft.Page):
 
     screen_edit_timer = ft.Column(
         [
-            ft.Text("Время активации", size=20, font_family="Geologica-Black"),
+            ft.Text("Время активации", size=20, font_family="Montserrat"),
             ft.Row(
                 [
                     timer_time_value,
@@ -689,7 +689,7 @@ def main(page: ft.Page):
                 alignment=ft.MainAxisAlignment.CENTER
             ),
             ft.Container(ft.Divider(thickness=1), width=500),
-            ft.Text("Действие", size=20, font_family="Geologica-Black"),
+            ft.Text("Действие", size=20, font_family="Montserrat"),
             ft.Row(
                 [
                     ft.Text("ВЫКЛ"), timer_action, ft.Text("ВКЛ")
