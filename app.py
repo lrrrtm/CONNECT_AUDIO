@@ -371,10 +371,24 @@ def main(page: ft.Page):
         # Получение обновлений с гита и перезапуск systemctl
 
         script_path = '/home/pi/synco.sh'
+
+        dialog_reboot = ft.AlertDialog(modal=True, content=ft.Column(
+            width=400, height=150,
+            controls=[ft.Text("Обновление запущено, ожидайте перезагрузки", size=17, text_align=ft.TextAlign.CENTER), ft.ProgressBar()],
+            alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER
+        ))
+        page.dialog = dialog_reboot
+        dialog_reboot.open = True
+        page.update()
+
+        time.sleep(2)
+
         try:
             subprocess.run([script_path], check=True)
-        except subprocess.CalledProcessError as e:
-            open_classic_snackbar(f"Ошибка при выполнении команды: {e}")
+        except Exception as e:
+            dialog_reboot.open = False
+            open_classic_snackbar(f"Ошибка перезагрузки", ft.colors.RED)
             print(f"Ошибка при выполнении команды: {e}")
 
     def change_screens(target):
@@ -389,7 +403,7 @@ def main(page: ft.Page):
 
         if target == "login":
             page.appbar = main_appbar
-            main_appbar.actions.append(ft.Container(padding=15, content=ft.ElevatedButton("Перезагрузка", icon=ft.icons.RESTART_ALT_ROUNDED, color=ft.colors.WHITE, on_click=reboot)))
+            main_appbar.actions.append(ft.Container(margin=ft.margin.only(right=20), content=ft.IconButton(icon=ft.icons.RESTART_ALT_ROUNDED, icon_color=ft.colors.TRANSPARENT, on_click=reboot)))
             password_field.on_change = check_pin_field
             btn_go.on_click = check_pin
             page.add(ft.Container(content=screen_login, expand=True))
