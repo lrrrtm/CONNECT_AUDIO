@@ -389,7 +389,7 @@ def main(page: ft.Page):
 
         if target == "login":
             page.appbar = main_appbar
-            main_appbar.actions.append(ft.Container(padding=15, content=ft.IconButton(ft.icons.RESTART_ALT_ROUNDED, on_click=reboot)))
+            main_appbar.actions.append(ft.Container(padding=15, content=ft.ElevatedButton("Перезагрузка", icon=ft.icons.RESTART_ALT_ROUNDED, color=ft.colors.WHITE, on_click=reboot)))
             password_field.on_change = check_pin_field
             btn_go.on_click = check_pin
             page.add(ft.Container(content=screen_login, expand=True))
