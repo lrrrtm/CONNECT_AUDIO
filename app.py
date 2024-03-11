@@ -388,6 +388,7 @@ def main(page: ft.Page):
         page.floating_action_button = None
 
         if target == "login":
+            page.appbar = main_appbar
             main_appbar.actions.append(ft.Container(padding=15, content=ft.IconButton(ft.icons.RESTART_ALT_ROUNDED, on_click=reboot)))
             password_field.on_change = check_pin_field
             btn_go.on_click = check_pin
