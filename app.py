@@ -76,9 +76,11 @@ def main(page: ft.Page):
         autoplay_checkbocx.value = source.global_variables.AUTOPLAY
         btn_prev.visible, btn_next.visible = not source.global_variables.AUTOPLAY, not source.global_variables.AUTOPLAY
         song_name.visible, song_author.visible = not source.global_variables.AUTOPLAY, not source.global_variables.AUTOPLAY
+        btn_play.visible = not source.global_variables.AUTOPLAY
         song_name.value = config_data['current_track']['name']
         song_author.value = config_data['current_track']['author']
         cur_status.value = config_data['current_track']['cur_status']
+        fill_playlist()
 
         page.update()
 
@@ -143,14 +145,27 @@ def main(page: ft.Page):
         else:
             change_screens(e.control.data)
 
+    def insert_to_queue(e: ft.ControlEvent):
+        config_data = load_config_file()
+        new_index = config_data['current_track']['index'] + 1
+        config_data['playlist'].remove(e.control.data)
+        config_data['playlist'].insert(new_index, e.control.data)
+        update_config_file(config_data)
+        playing_process("next")
+
     def playing_process(action):
         data = control(action)
         if action in ['next', 'prev']:
             cur_status.value = "играет в данный момент"
 
             track_name_author = eyed3.load(data)
+
             song_name.value = track_name_author.tag.title
+            if song_name.value == "":
+                song_name.value = os.path.basename(data)
             song_author.value = track_name_author.tag.artist
+            if song_author.value == "":
+                song_author.value = "---"
 
             config_data['current_track']['cur_status'] = cur_status.value
             config_data['current_track']['name'] = song_name.value
@@ -416,6 +431,26 @@ def main(page: ft.Page):
             password_field.border_color = ft.colors.SURFACE_VARIANT
         page.update()
 
+    def fill_playlist():
+        config_data = load_config_file()
+
+        playlist.controls.clear()
+        for track in set(config_data['playlist']):
+            song = eyed3.load(track).tag.title
+            if song == "":
+                song = os.path.basename(track)
+
+            playlist.controls.append(
+                ft.Container(
+                    ft.TextButton(
+                        text=song, on_click=insert_to_queue, data=track,
+                        style=ft.ButtonStyle(color=ft.colors.WHITE),
+                    ),
+                    margin=ft.margin.only(bottom=-10)
+                )
+            )
+        page.update()
+
     def change_screens(target):
         # изменение экранов
 
@@ -660,19 +695,24 @@ def main(page: ft.Page):
     )
 
     cur_status = ft.Text("")
-    song_name = ft.Text("Трек не играет", size=24)
+    song_name = ft.Text("---", size=24)
     song_author = ft.Text("---", size=20)
+    playlist = ft.Column(alignment=ft.MainAxisAlignment.START, horizontal_alignment=ft.CrossAxisAlignment.START,
+                         scroll=ft.ScrollMode.ADAPTIVE, height=200, width=300)
 
     screen_main = ft.Column(
         [
             ft.Column(
                 [
+                    ft.Text("Текущий плейлист", size=18),
+                    playlist,
+                    ft.Container(ft.Divider(thickness=2), width=300),
                     song_name,
                     ft.Container(
                         song_author,
                         margin=ft.margin.only(top=-15)
                     ),
-                    cur_status,
+                    # cur_status,
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER
@@ -794,7 +834,7 @@ def main(page: ft.Page):
         get_schedule()
         page.update()
 
-    check_for_update()
+    # check_for_update()
     change_screens("login")
 
 

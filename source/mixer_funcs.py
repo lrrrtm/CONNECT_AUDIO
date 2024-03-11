@@ -8,6 +8,7 @@ import source.global_variables
 
 mixer.init()
 
+
 def control(action):
     file_path = ""
     print(f"CURRENT ACTION: {action}")
@@ -64,6 +65,7 @@ def auto_play():
         else:
             # print(f"waiting to auto-play... {global_variables.AUTOPLAY}")
             time.sleep(1)
+
 
 def start_music_check():
     music_check_thread = threading.Thread(target=auto_play)
