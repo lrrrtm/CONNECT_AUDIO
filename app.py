@@ -2,7 +2,6 @@ from datetime import datetime
 import os
 import time
 
-import git
 import requests
 import subprocess
 
@@ -12,6 +11,8 @@ from source.functions import update_config_file, load_config_file
 import source.global_variables
 import flet as ft
 import eyed3
+
+from source.updates import start_check_update
 
 script_path = os.path.abspath(__file__)
 script_directory = os.path.dirname(script_path)
@@ -55,19 +56,6 @@ def main(page: ft.Page):
         bgcolor=ft.colors.SURFACE_VARIANT,
         leading=None,
     )
-
-    def check_for_update():
-        repo = git.Repo('.')
-
-        current_commit = repo.head.commit
-        repo.remote().fetch()
-        remote_commit = repo.remote().refs['master'].commit
-        if current_commit != remote_commit:
-            update_text.visible = True
-        else:
-            update_text.visible = False
-
-        page.update()
 
     def on_incoming_message(message: Message):
 
@@ -834,7 +822,10 @@ def main(page: ft.Page):
         get_schedule()
         page.update()
 
-    # check_for_update()
+    if source.global_variables.UPDATE:
+        update_text.visible = True
+    else:
+        update_text.visible = False
     change_screens("login")
 
 
@@ -842,6 +833,7 @@ DEFAULT_FLET_PATH = ''
 flet_path = os.getenv("FLET_PATH", DEFAULT_FLET_PATH)
 if __name__ == "__main__":
     play_start_sound()
+    start_check_update()
     send_awake()
     start_music_check()
     start_schedule()
