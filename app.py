@@ -369,27 +369,38 @@ def main(page: ft.Page):
 
     def reboot(e: ft.ControlEvent):
         # Получение обновлений с гита и перезапуск systemctl
+        reboot_pin = password_field.value
 
         script_path = '/home/pi/synco.sh'
 
         dialog_reboot = ft.AlertDialog(modal=True, content=ft.Column(
             width=400, height=150,
-            controls=[ft.Text("Обновление запущено, ожидайте перезагрузки", size=17, text_align=ft.TextAlign.CENTER), ft.ProgressBar()],
+            controls=[ft.Text("Обновление запущено, ожидайте перезагрузки", size=17, text_align=ft.TextAlign.CENTER),
+                      ft.ProgressBar()],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
         ))
-        page.dialog = dialog_reboot
-        dialog_reboot.open = True
-        page.update()
 
-        time.sleep(2)
+        if reboot_pin == "6387":
+            page.dialog = dialog_reboot
+            dialog_reboot.open = True
+            page.update()
 
-        try:
-            subprocess.run([script_path], check=True)
-        except Exception as e:
+            time.sleep(2)
             dialog_reboot.open = False
-            open_classic_snackbar(f"Ошибка перезагрузки", ft.colors.RED)
-            print(f"Ошибка при выполнении команды: {e}")
+
+            try:
+                subprocess.run([script_path], check=True)
+            except Exception as e:
+                open_classic_snackbar(f"Ошибка перезагрузки", ft.colors.RED)
+                print(f"Ошибка при выполнении команды: {e}")
+        else:
+            password_field.value = ""
+            password_field.border_color = ft.colors.RED
+            page.update()
+            time.sleep(2)
+            password_field.border_color = ft.colors.SURFACE_VARIANT
+        page.update()
 
     def change_screens(target):
         # изменение экранов
@@ -402,8 +413,6 @@ def main(page: ft.Page):
         page.floating_action_button = None
 
         if target == "login":
-            page.appbar = main_appbar
-            main_appbar.actions.append(ft.Container(margin=ft.margin.only(right=20), content=ft.IconButton(icon=ft.icons.RESTART_ALT_ROUNDED, icon_color=ft.colors.TRANSPARENT, on_click=reboot)))
             password_field.on_change = check_pin_field
             btn_go.on_click = check_pin
             page.add(ft.Container(content=screen_login, expand=True))
@@ -530,6 +539,7 @@ def main(page: ft.Page):
     btn_go = ft.ElevatedButton(
         text="Войти",
         color=ft.colors.WHITE,
+        on_long_press=reboot,
         icon=ft.icons.KEYBOARD_ARROW_RIGHT_ROUNDED,
         disabled=True,
         width=250,
