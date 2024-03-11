@@ -3,6 +3,7 @@ import os
 import time
 
 import requests
+import subprocess
 
 from source.schedule_funcs import start_schedule
 from source.mixer_funcs import control, set_volume, play_start_sound, start_music_check
@@ -366,16 +367,28 @@ def main(page: ft.Page):
 
         page.update()
 
+    def reboot(e: ft.ControlEvent):
+        # Получение обновлений с гита и перезапуск systemctl
+
+        script_path = '/home/pi/synco.sh'
+        try:
+            subprocess.run([script_path], check=True)
+        except subprocess.CalledProcessError as e:
+            open_classic_snackbar(f"Ошибка при выполнении команды: {e}")
+            print(f"Ошибка при выполнении команды: {e}")
+
     def change_screens(target):
         # изменение экранов
 
         page.clean()
         page.appbar = None
+        main_appbar.actions = None
         page.navigation_bar = None
         page.scroll = None
         page.floating_action_button = None
 
         if target == "login":
+            main_appbar.actions.append(ft.Container(padding=15, content=ft.IconButton(ft.icons.RESTART_ALT_ROUNDED, on_click=reboot)))
             password_field.on_change = check_pin_field
             btn_go.on_click = check_pin
             page.add(ft.Container(content=screen_login, expand=True))
