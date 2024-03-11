@@ -20,6 +20,8 @@ os.chdir(script_directory)
 project_folder = os.getcwd()
 config_file_name = "audio_config.json"
 
+version = "0.1.1"
+
 
 class Message():
     def __init__(self, data):
@@ -600,7 +602,7 @@ def main(page: ft.Page):
             ),
             ft.Row(
                 [
-                    ft.Text("CROD.Audio v0.1 by lrrrtm")
+                    ft.Text(f"CROD.Audio v{version}")
                 ],
                 alignment=ft.MainAxisAlignment.START
             )
