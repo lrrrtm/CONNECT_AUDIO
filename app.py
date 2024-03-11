@@ -715,5 +715,5 @@ if __name__ == "__main__":
         target=main,
         view=None,
         port=8503,
-        assets_dir="../assets"
+        assets_dir="assets"
     )
