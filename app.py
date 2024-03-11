@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import time
 
@@ -225,16 +226,30 @@ def main(page: ft.Page):
                     config_data['schedule'][index]['active'] = not timer['active']
                     update_config_file(config_data)
                     open_classic_snackbar("Таймер переключен")
-                    break
                 elif action == "delete":
                     config_data['schedule'].remove(timer)
                     update_config_file(config_data)
                     open_classic_snackbar("Таймер удалён")
-                    get_schedule()
-                    page.update()
-                    break
+
+                get_schedule()
+                page.update()
+                break
         if action == "edit":
-            change_screens("edit_timer")
+            print(e.control.data)
+            source.global_variables.edit_timer_data = e.control.data
+            print(source.global_variables.edit_timer_data)
+            timer = source.global_variables.edit_timer_data[1]
+            timer_time_btn.text = f"{timer['hours']}:{timer['minutes']}"
+            timer_time_picker.value = f"{timer['hours']}:{timer['minutes']}"
+
+            if timer['action'] == "next":
+                timer_action_dd.value = "Включение"
+            else:
+                timer_action_dd.value = "Выключение"
+
+            page.dialog = dialog_edit_timer
+            dialog_edit_timer.open = True
+            page.update()
 
     def get_schedule():
         config_data = load_config_file()
@@ -246,26 +261,54 @@ def main(page: ft.Page):
             "next": "Включение",
             "pause": "Выключение",
         }
+        icons = {
+            "next": [ft.icons.VOLUME_UP_ROUNDED, ft.colors.GREEN],
+            "pause": [ft.icons.VOLUME_OFF_ROUNDED, ft.colors.RED]
+        }
 
         for timer in timers:
-            edit_btn.data = ['edit', timer]
+
+            last_call = ft.Text(size=16)
+
+            if timer['active']:
+                if str(datetime.now().date()) == timer['last_action']:
+                    last_call.value = "Завтра"
+                else:
+                    last_call.value = "Сегодня"
+            else:
+                last_call.value = "Отключен"
+
             timer_card = ft.Card(
                 ft.Container(
                     content=ft.Column(
                         [
                             ft.Row(
                                 [
+                                    ft.Icon(icons[timer['action']][0], color=ft.colors.WHITE, size=25),
                                     ft.Text(f"{actions[timer['action']]} в {timer['hours']}:{timer['minutes']}",
-                                            size=19),
-                                    ft.Switch(value=timer['active'], data=['switch', timer['id']],
-                                              on_change=schedule_editor)
+                                            size=19)
                                 ],
                                 alignment=ft.MainAxisAlignment.START
                             ),
-                            ft.Text(f"{timer['volume']}% | {timer['last_action']}", size=16),
                             ft.Row(
                                 [
-                                    edit_btn,
+                                    ft.Switch(
+                                        value=timer['active'], data=['switch', timer['id']],
+                                        on_change=schedule_editor, active_color=ft.colors.GREEN,
+                                        inactive_thumb_color=ft.colors.RED,
+                                    ),
+                                    last_call,
+                                ]
+                            ),
+                            ft.Row(
+                                [
+                                    ft.ElevatedButton(
+                                        icon=ft.icons.EDIT_ROUNDED,
+                                        color=ft.colors.WHITE,
+                                        text="Изменить",
+                                        on_click=schedule_editor,
+                                        data=['edit', timer],
+                                    ),
                                     ft.ElevatedButton(
                                         icon=ft.icons.DELETE_ROUNDED,
                                         color=ft.colors.WHITE,
@@ -274,7 +317,7 @@ def main(page: ft.Page):
                                         data=['delete', timer['id']]
                                     )
                                 ]
-                            )
+                            ),
                         ]
                     ),
                     padding=15
@@ -285,10 +328,10 @@ def main(page: ft.Page):
 
     def update_timer_action(e):
         config_data = load_config_file()
-
+        print(source.global_variables.edit_timer_data)
         for index, timer in enumerate(config_data['schedule']):
-            if timer['id'] == edit_btn.data[1]['id']:
-                if e.control.value == 100:
+            if timer['id'] == source.global_variables.edit_timer_data[1]['id']:
+                if e.control.value == "Включение":
                     action = "next"
                 else:
                     action = "pause"
@@ -300,14 +343,14 @@ def main(page: ft.Page):
 
     def update_timer_time(e):
         config_data = load_config_file()
-
+        print(source.global_variables.edit_timer_data)
         for index, timer in enumerate(config_data['schedule']):
-            if timer['id'] == edit_btn.data[1]['id']:
+            if timer['id'] == source.global_variables.edit_timer_data[1]['id']:
                 config_data['schedule'][index]['hours'] = str(e.control.value.hour)
                 config_data['schedule'][index]['minutes'] = "0" * (2 - len(str(e.control.value.minute))) + str(
                     e.control.value.minute)
                 update_config_file(config_data)
-                timer_time_value.value = f"{str(e.control.value.hour)}:{config_data['schedule'][index]['minutes']}"
+                timer_time_btn.text = f"{str(e.control.value.hour)}:{config_data['schedule'][index]['minutes']}"
                 open_classic_snackbar("Время изменено")
                 break
 
@@ -417,27 +460,6 @@ def main(page: ft.Page):
 
             get_schedule()
             page.add(screen_schedule)
-
-        elif target == "edit_timer":
-
-            page.appbar = main_appbar
-            main_appbar.title.value = "Редактирование таймера"
-            main_appbar.leading = ft.IconButton(
-                icon=ft.icons.ARROW_BACK_ROUNDED,
-                data="main",
-                on_click=sender
-            )
-
-            timer = edit_btn.data[1]
-            timer_time_value.value = f"{timer['hours']}:{timer['minutes']}"
-            timer_time_picker.value = f"{timer['hours']}:{timer['minutes']}"
-
-            if timer['action'] == "next":
-                timer_action.value = 100
-            else:
-                timer_action.value = 0
-
-            page.add(screen_edit_timer)
 
         else:
             page.add(
@@ -643,13 +665,6 @@ def main(page: ft.Page):
         # scroll=ft.ScrollMode.ADAPTIVE
     )
 
-    edit_btn = ft.ElevatedButton(
-        icon=ft.icons.EDIT_ROUNDED,
-        color=ft.colors.WHITE,
-        text="Изменить",
-        on_click=schedule_editor,
-    )
-
     screen_schedule = ft.Column(
         [
             timers_list
@@ -670,38 +685,50 @@ def main(page: ft.Page):
         on_change=update_timer_time
     )
     page.overlay.append(timer_time_picker)
-    timer_time_value = ft.Text(f"HH:MM", size=19)
-    timer_action = ft.Slider(min=0, max=100, divisions=1, width=100, on_change=update_timer_action)
+    timer_time_btn = ft.ElevatedButton(
+        "Изменить время",
+        on_click=lambda _: timer_time_picker.pick_time(),
+        color=ft.colors.WHITE,
+        icon=ft.icons.ACCESS_TIME_ROUNDED
+    )
+    timer_action_dd = ft.Dropdown(
+        # width=100,
+        options=[
+            ft.dropdown.Option("Включение"),
+            ft.dropdown.Option("Выключение"),
+        ],
+        on_change=update_timer_action
+    )
 
-    screen_edit_timer = ft.Column(
-        [
-            ft.Text("Время активации", size=20, font_family="Montserrat"),
-            ft.Row(
-                [
-                    timer_time_value,
-                    ft.ElevatedButton(
-                        "Изменить время",
-                        on_click=lambda _: timer_time_picker.pick_time(),
-                        color=ft.colors.WHITE,
-                        icon=ft.icons.ACCESS_TIME_ROUNDED
-                    )
-                ],
-                alignment=ft.MainAxisAlignment.CENTER
-            ),
-            ft.Container(ft.Divider(thickness=1), width=500),
-            ft.Text("Действие", size=20, font_family="Montserrat"),
-            ft.Row(
-                [
-                    ft.Text("ВЫКЛ"), timer_action, ft.Text("ВКЛ")
-                ],
-                alignment=ft.MainAxisAlignment.CENTER
+    dialog_edit_timer = ft.AlertDialog(
+        modal=True,
+        title=ft.Text("Изменение", size=20),
+        content=ft.Column(
+            [
+                ft.Text("Время активации", size=18),
+                timer_time_btn,
+                ft.Container(ft.Divider(thickness=1)),
+                ft.Text("Действие", size=18),
+                timer_action_dd
+            ],
+            height=250,
+            width=400
+        ),
+        actions=[
+            ft.ElevatedButton(
+                text="Назад",
+                icon=ft.icons.ARROW_BACK_ROUNDED,
+                color=ft.colors.WHITE,
+                on_click=lambda _: close_dialog(dialog_edit_timer)
             )
         ],
-        alignment=ft.MainAxisAlignment.CENTER,
-        horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-        width=500,
-        expand=True,
+        actions_alignment=ft.MainAxisAlignment.END
     )
+
+    def close_dialog(dialog: ft.AlertDialog):
+        dialog.open = False
+        get_schedule()
+        page.update()
 
 
 DEFAULT_FLET_PATH = ''

@@ -8,7 +8,6 @@ import source.global_variables
 
 mixer.init()
 
-
 def control(action):
     file_path = ""
     print(f"CURRENT ACTION: {action}")
