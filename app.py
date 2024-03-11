@@ -394,7 +394,7 @@ def main(page: ft.Page):
 
         dialog_reboot = ft.AlertDialog(modal=True, content=ft.Column(
             width=400, height=150,
-            controls=[ft.Text("Обновление запущено, ожидайте перезагрузки", size=17, text_align=ft.TextAlign.CENTER),
+            controls=[ft.Text("Приложение обновляется, откройте его снова через несколько минут", size=16, text_align=ft.TextAlign.CENTER),
                       ft.ProgressBar()],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
