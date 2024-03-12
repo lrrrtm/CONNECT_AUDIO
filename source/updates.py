@@ -24,6 +24,7 @@ def check_for_update():
             source.global_variables.UPDATE = True
         else:
             source.global_variables.UPDATE = False
+        print(source.global_variables.UPDATE)
         time.sleep(20)
 
 
