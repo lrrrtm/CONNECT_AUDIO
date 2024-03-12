@@ -390,11 +390,11 @@ def main(page: ft.Page):
         # Получение обновлений с гита и перезапуск systemctl
         reboot_pin = password_field.value
 
-        script_path = '/home/pi/synco.sh'
+        script_path = f'{project_folder}/synco.sh'
 
         dialog_reboot = ft.AlertDialog(modal=True, content=ft.Column(
             width=400, height=150,
-            controls=[ft.Text("Приложение обновляется, откройте его снова через несколько минут", size=16, text_align=ft.TextAlign.CENTER),
+            controls=[ft.Text("Приложение обновляется, закройте его и перезапустите снова через несколько минут", size=16, text_align=ft.TextAlign.CENTER),
                       ft.ProgressBar()],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
