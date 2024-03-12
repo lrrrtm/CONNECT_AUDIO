@@ -427,6 +427,7 @@ def main(page: ft.Page):
             dialog_reboot.open = False
 
             try:
+                control("pause")
                 subprocess.run([script_path], check=True)
             except Exception as e:
                 open_classic_snackbar(f"Ошибка перезагрузки", ft.colors.RED)
