@@ -53,8 +53,11 @@ def set_volume(volume_value: float):
     mixer.music.set_volume(volume_value)
 
 
-def play_start_sound():
-    mixer.music.load("start_sound.mp3")
+def play_start_sound(sound_type: str):
+    if sound_type == "start":
+        mixer.music.load("start_sound.mp3")
+    elif sound_type == "reboot":
+        mixer.music.load("reboot_sound.mp3")
     mixer.music.play(fade_ms=1000)
 
 

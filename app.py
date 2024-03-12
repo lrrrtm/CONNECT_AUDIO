@@ -428,6 +428,7 @@ def main(page: ft.Page):
 
             try:
                 control("pause")
+                play_start_sound("reboot")
                 subprocess.run([script_path], check=True)
             except Exception as e:
                 open_classic_snackbar(f"Ошибка перезагрузки", ft.colors.RED)
@@ -862,7 +863,7 @@ def main(page: ft.Page):
 DEFAULT_FLET_PATH = ''
 flet_path = os.getenv("FLET_PATH", DEFAULT_FLET_PATH)
 if __name__ == "__main__":
-    play_start_sound()
+    play_start_sound("start")
     start_check_update()
     send_awake()
     start_music_check()
