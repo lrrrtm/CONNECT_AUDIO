@@ -38,7 +38,10 @@ def control(action):
     elif action == "pause":
         if source.global_variables.AUTOPLAY:
             source.global_variables.AUTOPLAY = False
-        mixer.music.pause()
+        mixer.music.fadeout(3000)
+        # mixer.music.load(config_data['current_track'])
+        # time.sleep(10)
+        # mixer.music.stop()
         print("PAUSED")
     elif action == "play":
         mixer.music.unpause()
