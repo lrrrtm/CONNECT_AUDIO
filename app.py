@@ -64,18 +64,25 @@ def main(page: ft.Page):
         config_data = message.data
         vol_slider.value = config_data['volume']
         autoplay_checkbocx.value = source.global_variables.AUTOPLAY
-        btn_prev.visible, btn_next.visible = not source.global_variables.AUTOPLAY, not source.global_variables.AUTOPLAY
-        song_name.visible, song_author.visible = not source.global_variables.AUTOPLAY, not source.global_variables.AUTOPLAY
-        btn_play.visible = not source.global_variables.AUTOPLAY
+        change_controls_visible()
+        fill_playlist()
         song_name.value = config_data['current_track']['name']
         song_author.value = config_data['current_track']['author']
         cur_status.value = config_data['current_track']['cur_status']
-        fill_playlist()
 
         page.update()
 
+    def change_controls_visible():
+        btn_prev.visible, btn_next.visible = not source.global_variables.AUTOPLAY, not source.global_variables.AUTOPLAY
+        song_name.visible, song_author.visible = not source.global_variables.AUTOPLAY, not source.global_variables.AUTOPLAY
+        btn_play.visible = not btn_pause.visible
+        print("VISIBLE", btn_prev.visible)
+        # time.sleep(2)
+        page.update()
+
     def send_data():
-        page.pubsub.send_all(Message(data=config_data))
+        pass
+        page.pubsub.send_others(Message(data=config_data))
 
     page.pubsub.subscribe(on_incoming_message)
 
@@ -144,8 +151,11 @@ def main(page: ft.Page):
         playing_process("next")
 
     def playing_process(action):
+        print("ACTION", action)
         data = control(action)
         if action in ['next', 'prev']:
+            btn_play.visible = False
+            btn_pause.visible = True
             cur_status.value = "играет в данный момент"
 
             track_name_author = eyed3.load(data)
@@ -165,12 +175,14 @@ def main(page: ft.Page):
 
         elif action == "play":
             cur_status.value = "играет в данный момент"
-
+            btn_play.visible = False
+            btn_pause.visible = True
         elif action == "pause":
-            if source.global_variables.AUTOPLAY:
+            if autoplay_checkbocx.value:
                 autoplay_checkbocx.value = False
                 autoplay_checkbox_value_changed()
-
+            btn_play.visible = True
+            btn_pause.visible = False
             cur_status.value = "на паузе в данный момент"
         page.update()
         send_data()
@@ -207,11 +219,16 @@ def main(page: ft.Page):
         if value:
             open_classic_snackbar("Автоплей")
             cur_status.value = "автоплей"
+            btn_play.visible = False
+            btn_pause.visible = True
         else:
             open_classic_snackbar("Ручное управление")
             cur_status.value = "ручное управление"
+            btn_play.visible = False
+            btn_pause.visible = True
 
         source.global_variables.AUTOPLAY = value
+        change_controls_visible()
 
         send_data()
         page.update()
@@ -394,7 +411,7 @@ def main(page: ft.Page):
 
         dialog_reboot = ft.AlertDialog(modal=True, content=ft.Column(
             width=400, height=150,
-            controls=[ft.Text("Приложение обновляется, закройте его и перезапустите снова через несколько минут", size=16, text_align=ft.TextAlign.CENTER),
+            controls=[ft.Text("Приложение обновляется и будет перезапущено. После звукового сигнала откройте его снова", size=16, text_align=ft.TextAlign.CENTER),
                       ft.ProgressBar()],
             alignment=ft.MainAxisAlignment.CENTER,
             horizontal_alignment=ft.CrossAxisAlignment.CENTER
@@ -423,22 +440,26 @@ def main(page: ft.Page):
 
     def fill_playlist():
         config_data = load_config_file()
-
+        added = []
+        print(added)
         playlist.controls.clear()
         for track in set(config_data['playlist']):
             song = eyed3.load(track).tag.title
             if song == "":
                 song = os.path.basename(track)
 
-            playlist.controls.append(
-                ft.Container(
-                    ft.TextButton(
-                        text=song, on_click=insert_to_queue, data=track,
-                        style=ft.ButtonStyle(color=ft.colors.WHITE),
-                    ),
-                    margin=ft.margin.only(bottom=-10)
+            if song not in added:
+                print(song, added)
+                playlist.controls.append(
+                    ft.Container(
+                        ft.TextButton(
+                            text=song, on_click=insert_to_queue, data=track,
+                            style=ft.ButtonStyle(color=ft.colors.WHITE),
+                        ),
+                        margin=ft.margin.only(bottom=-10)
+                    )
                 )
-            )
+                added.append(song)
         page.update()
 
     def change_screens(target):
@@ -466,6 +487,7 @@ def main(page: ft.Page):
             set_volume(config_data['volume'] / 100)
             autoplay_checkbocx.value = source.global_variables.AUTOPLAY
             autoplay_checkbox_value_changed()
+            fill_playlist()
             page.appbar = main_appbar
             main_appbar.title.value = "Воспроизведение"
             main_appbar.leading = ft.IconButton(
@@ -694,8 +716,8 @@ def main(page: ft.Page):
         [
             ft.Column(
                 [
-                    ft.Text("Текущий плейлист", size=18),
-                    playlist,
+                    # ft.Text("Текущий плейлист", size=18),
+                    # playlist,
                     ft.Container(ft.Divider(thickness=2), width=300),
                     song_name,
                     ft.Container(
@@ -824,12 +846,12 @@ def main(page: ft.Page):
         get_schedule()
         page.update()
 
-    # print(source.global_variables.UPDATE)
+    # print("!!!!!!", source.global_variables.UPDATE)
     if source.global_variables.UPDATE:
         update_text.visible = True
     else:
         update_text.visible = False
-    # page.update()
+    page.update()
     change_screens("login")
 
 

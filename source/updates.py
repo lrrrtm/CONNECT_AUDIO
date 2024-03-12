@@ -18,7 +18,7 @@ def check_for_update():
         else:
             source.global_variables.UPDATE = False
         # print(source.global_variables.UPDATE)
-        time.sleep(60)
+        time.sleep(20)
 
 
 def start_check_update():
