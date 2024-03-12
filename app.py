@@ -59,6 +59,7 @@ def main(page: ft.Page):
         leading=None,
     )
 
+
     def on_incoming_message(message: Message):
 
         config_data = message.data
@@ -608,7 +609,7 @@ def main(page: ft.Page):
     )
 
     update_text = ft.Text("Новое обновление доступно!", size=14, text_align=ft.TextAlign.CENTER, visible=False)
-
+    version_text = ft.Text("")
     screen_login = ft.Column(
         [
             ft.Column(
@@ -624,7 +625,7 @@ def main(page: ft.Page):
             ),
             ft.Row(
                 [
-                    ft.Text(f"CROD.Audio v{version}")
+                    version_text
                 ],
                 alignment=ft.MainAxisAlignment.START
             )
@@ -851,6 +852,8 @@ def main(page: ft.Page):
         update_text.visible = True
     else:
         update_text.visible = False
+
+    version_text.value = f"CROD.Connect (сборка {config_data['version'][:7]})"
     page.update()
     change_screens("login")
 
