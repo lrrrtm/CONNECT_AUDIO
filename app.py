@@ -855,7 +855,7 @@ def main(page: ft.Page):
     else:
         update_text.visible = False
 
-    version_text.value = f"CROD.Connect (сборка {config_data['version'][:7]})"
+    version_text.value = f"CROD.Audio (сборка {config_data['version'][:7]})"
     page.update()
     change_screens("login")
 
